@@ -1,0 +1,691 @@
+#Test with: http://editor.swagger.io/
+
+swagger: '2.0'
+info:
+  version: 2.0.0
+  title: API Gateway
+  description: Ruby
+  contact:
+      name: E Team
+      email: debeltranc@unal.edu.co
+  license:
+    name: Software Architecture 2017-II
+host: 192.168.99.101:6000
+basePath: /
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  token:
+    type: apiKey
+    name: Authorization
+    in: header
+paths:
+  /sign-in:
+    post:
+      tags: 
+        - Users
+      summary: Authenticate user
+      parameters:
+        - name: UserAuth
+          in: body
+          required: true
+          description: User email and password
+          schema:
+            $ref: '#/definitions/UserAuth'
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/UserAuthOk'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /logout:
+    get:
+      security:
+        - token: []
+      tags: 
+        - Users
+      summary: Authenticate user
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /users/myProfile:
+    get:
+      security:
+        - token: []
+      tags: 
+        - Users
+      summary: Returns the current user
+
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/UserInfoWithToken'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /users:
+    post:
+      tags: 
+        - Users
+      summary: Create an user
+      parameters:
+        - name: User
+          in: body
+          required: true
+          description: User information
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/UserInfo'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    put:
+      security:
+        - token: []
+      tags: 
+        - Users
+      summary: Update an user
+      parameters:
+        - name: User
+          in: body
+          description: User information (All params are optional except password_confirmation)
+          schema:
+            $ref: '#/definitions/UserToEdit'
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/UserInfo'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    delete:
+      security:
+        - token: []
+      tags: 
+        - Users
+      summary: Delete an user
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/UserInfo'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /users/search?name={name}:
+    get:
+      security:
+        - token: []
+      tags: 
+        - Users
+      summary: Returns the users with that match selected name
+      parameters:
+        - name: name
+          in: path
+          description: The name to search
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/UsersList'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /events:
+    post:
+      security:
+        - token: []
+      tags: 
+        - Events
+      summary: Create an event
+      parameters:
+        - name: Event
+          in: body
+          required: true
+          description: Event information
+          schema:
+            $ref: '#/definitions/Event'
+      responses:
+        '201':
+          description: Created
+          schema:
+            $ref: '#/definitions/EventInfo'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    
+    get:
+      security:
+        - token: []
+      tags: 
+        - Events
+      summary: Returns all events
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /events/{id}/attendance:
+    get:
+      security:
+        - token: []
+      tags: 
+        - Events
+      summary: Returns an event including attendance and invitations
+      parameters:
+        - name: id
+          in: path
+          description: The id of the event to be returned
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventWithInfo'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+    put:
+      security:
+        - token: []
+      tags: 
+        - Events
+      summary: Define an user attendance for specific events
+      parameters:
+        - name: id
+          in: path
+          description: The id of the event to assign the attendance
+          required: true
+          type: string
+          
+        - name: status
+          in: body
+          required: true
+          description: Event information
+          schema:
+            $ref: '#/definitions/AttendanceOnlyStatus'
+      responses:
+        '200':
+          description: ok
+          schema:
+            $ref: '#/definitions/ResponseToken'
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /events/myEvents:
+    get:
+      security:
+        - token: []
+      tags: 
+        - Events
+      summary: Returns all the events of the user
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /events/site/{site_id}:
+    get:
+      security:
+        - token: []
+      tags: 
+        - Events
+      parameters:
+        - name: site_id
+          in: path
+          description: The id of the site
+          required: true
+          type: string
+      summary: Returns all the events of the selected site
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/EventsList'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /events/{id}/invite:
+    post:
+      security:
+        - token: []
+      tags: 
+        - Events
+      summary: Send the invitation for specific events
+      parameters:
+        - name: id
+          in: path
+          description: The id of the event
+          required: true
+          type: string
+          
+        - name: Invitation
+          in: body
+          required: true
+          description: Invitation information
+          schema:
+            $ref: '#/definitions/InvitationList'
+      responses:
+        '200':
+          description: ok
+        '400':
+          description: Bad request
+          schema:
+            $ref: '#/definitions/ErrorModel'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+  /sites:
+    get:
+      tags: 
+        - Sites
+      summary: Returns all the sites
+      responses:
+        '200':
+          description: Ok
+          schema:
+            $ref: '#/definitions/SitesList'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/ErrorModelOnlyMessage'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/ErrorModel'
+            
+definitions:
+# User
+  User:
+    type: object
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      email:
+        type: string
+      age:
+        type: integer
+      password:
+        type: string
+      password_confirmation:
+        type: string
+        
+  UserInfo:
+    type: object
+    properties:
+      id:
+        type: integer
+      first_name:
+        type: string
+      last_name:
+        type: string
+      email:
+        type: string
+      age:
+        type: integer
+  UserInfoWithToken:
+    type: object
+    properties:
+      user:
+        type: object
+        properties:
+          id:
+            type: integer
+          first_name:
+            type: string
+          last_name:
+            type: string
+          email:
+            type: string
+          age:
+            type: integer
+      token:
+        type: string
+        
+  UserAuth:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+  UserAuthOk:
+    type: object
+    properties:
+      token:
+        type: string
+        
+  UserToEdit:
+    type: object
+    properties:
+      user:
+        type: object
+        properties:
+          first_name:
+            type: string
+          last_name:
+            type: string
+          email:
+            type: string
+          age:
+            type: integer
+          password:
+            type: string
+          password_confirmation:
+            type: string
+  UsersList:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/UserInfo'
+      token:
+        type: string
+          
+# Event
+  Event:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      site_id:
+        type: integer
+      start_time:
+        type: string
+      end_time:
+        type: string
+        
+  EventUpdate:
+    type: object
+    properties:
+      event:
+        type: object
+        properties:
+          name:
+            type: string
+          description:
+            type: string
+          address:
+            type: string
+          phone:
+            type: integer
+          start_time:
+            type: string
+          end_time:
+            type: string
+          latitude:
+            type: string
+          longitude:
+            type: string
+        
+  EventCreated:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      description:
+        type: string
+      site_id:
+        type: integer
+      start_time:
+        type: string
+      end_time:
+        type: string
+
+  EventInfo:
+    type: object
+    properties:
+      message:
+        type: string
+      event:
+        type: array
+        items:
+          $ref: '#/definitions/EventCreated'
+      token:
+        type: string
+          
+  EventWithInfo:
+    type: object
+    properties:
+      event:
+        type: array
+        items:
+          $ref: '#/definitions/EventCreated'
+      invitation:
+        type: array
+        items:
+          $ref: '#/definitions/Invitation'
+      attendance:
+        type: array
+        items:
+          $ref: '#/definitions/Attendance'
+      token:
+        type: string
+          
+  EventsList:
+    type: object
+    properties:
+      events:
+        type: array
+        items:
+          $ref: '#/definitions/EventCreated'
+      token:
+        type: string
+        
+  SitesList:
+    type: object
+    properties:
+      sites:
+        type: array
+        items:
+          $ref: '#/definitions/SiteInfo'
+      token:
+        type: string
+  SiteInfo:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      latitude:
+        type: string
+      longitude:
+        type: integer
+      image:
+        type: string
+
+#Attendance
+  Attendance:
+    type: object
+    properties:
+      id:
+        type: integer
+      user_id:
+        type: integer
+      event_id:
+        type: integer
+      address:
+        type: string
+      status:
+        type: string
+      resource_uri:
+        type: string
+  AttendanceOnlyStatus:
+    type: object
+    properties:
+      status:
+        type: integer
+#Invitation
+  Invitation:
+    type: object
+    properties:
+      id:
+        type: integer
+      event_id:
+        type: integer
+      host_id:
+        type: integer
+      receiver_id:
+        type: integer
+      sent_date:
+        type: string
+        
+  InvitationList:
+    type: object
+    properties:
+      invites:
+        type: array
+        items: 
+          $ref: '#/definitions/InvitationToSend'
+          
+  InvitationToSend:
+    type: object
+    properties:
+      ID:
+        type: integer
+      Name:
+        type: string
+      Lastname:
+        type: string
+      Email:
+        type: string
+  ResponseToken:
+    type: object
+    properties:
+      token:
+        type: string
+
+# Errors
+  ErrorModel:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        default: asd
+      errors:
+        type: object
+      token:
+        type: string
+        default: asd
+  ErrorModelOnlyMessage:
+    type: object
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        default: asd
